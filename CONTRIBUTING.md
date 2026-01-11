@@ -67,7 +67,7 @@ Place your workflow in the correct category folder:
 ```
 workflows/<category>/<component>/
 ├── <component>-<validation-type>.yaml
-└── README.md
+└── README.md (optional)
 ```
 
 ### 3. Follow Naming Conventions
@@ -148,7 +148,6 @@ metadata:
   labels:
     catalog.testkube.io/category: "<category>"           # databases, messaging, etc.
     catalog.testkube.io/component: "<component>"         # redis, kafka, etc.
-    catalog.testkube.io/validation-type: "<type>"        # connectivity, health, performance, security, ei
 ```
 
 ### Required Annotations
@@ -168,7 +167,6 @@ metadata:
 metadata:
   annotations:
     catalog.testkube.io/icon: "https://cdn.simpleicons.org/<component>"  # Icon URL (see below)
-    catalog.testkube.io/tags: "keyword1,keyword2"                        # For search
 ```
 
 #### Finding Icon URLs

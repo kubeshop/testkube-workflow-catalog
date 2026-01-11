@@ -23,13 +23,17 @@ workflows/
 ├── networking/         # Ingress controllers, Service mesh
 ├── observability/      # Prometheus, Grafana, Jaeger
 └── security/           # Vault, cert-manager
+└── other/              # Anything that doesn't fit these categories
+
 ```
 
 ## Quick Start
 
 ### 1. Browse Available Workflows
 
-Explore the `workflows/` directory to find validation workflows for your infrastructure components.
+Explore the `workflows/` directory to find validation workflows for your infrastructure components. 
+
+The Testkube Dashboard included with 
 
 ### 2. Deploy a Workflow
 
@@ -61,7 +65,7 @@ All workflows include standardized metadata for easy discovery:
 
 | Label | Purpose | Values |
 |-------|---------|--------|
-| `catalog.testkube.io/category` | Infrastructure type | `databases`, `messaging`, `caching`, `storage`, `networking`, `observability`, `security` |
+| `catalog.testkube.io/category` | Infrastructure type | `databases`, `messaging`, `caching`, `storage`, `networking`, `observability`, `security`, `other` |
 | `catalog.testkube.io/component` | Specific component | `redis`, `postgresql`, `kafka`, etc. |
 | `catalog.testkube.io/validation-type` | What's being validated | `connectivity`, `health`, `performance`, `security` |
 

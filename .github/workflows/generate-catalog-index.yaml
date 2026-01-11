@@ -43,7 +43,6 @@ jobs:
             NAME=$(yq '.metadata.name' "$file" 2>/dev/null)
             CATEGORY=$(yq '.metadata.labels["catalog.testkube.io/category"]' "$file" 2>/dev/null)
             COMPONENT=$(yq '.metadata.labels["catalog.testkube.io/component"]' "$file" 2>/dev/null)
-            VALIDATION_TYPE=$(yq '.metadata.labels["catalog.testkube.io/validation-type"]' "$file" 2>/dev/null)
             DISPLAY_NAME=$(yq '.metadata.annotations["catalog.testkube.io/display-name"]' "$file" 2>/dev/null)
             DESCRIPTION=$(yq '.metadata.annotations["catalog.testkube.io/description"]' "$file" 2>/dev/null)
             ICON=$(yq '.metadata.annotations["catalog.testkube.io/icon"]' "$file" 2>/dev/null)
@@ -60,6 +59,13 @@ jobs:
             [ "$ICON" = "null" ] && ICON=""
             [ "$VALIDATION_TYPE" = "null" ] && VALIDATION_TYPE=""
             
+            # Check for README in same directory
+            DIR=$(dirname "$file")
+            README_PATH=""
+            if [ -f "$DIR/README.md" ]; then
+              README_PATH="$DIR/README.md"
+            fi
+            
             # Add comma before entries (except first)
             if [ "$FIRST" = true ]; then
               FIRST=false
@@ -68,18 +74,32 @@ jobs:
             fi
             
             # Write JSON entry
-            cat >> catalog-index.json << EOF
+            if [ -n "$README_PATH" ]; then
+              cat >> catalog-index.json << EOF
             {
               "path": "$file",
               "name": "$NAME",
               "category": "$CATEGORY",
               "component": "$COMPONENT",
-              "validationType": "$VALIDATION_TYPE",
+              "displayName": "$DISPLAY_NAME",
+              "description": "$DESCRIPTION",
+              "icon": "$ICON",
+              "readme": "$README_PATH"
+            }
+          EOF
+            else
+              cat >> catalog-index.json << EOF
+            {
+              "path": "$file",
+              "name": "$NAME",
+              "category": "$CATEGORY",
+              "component": "$COMPONENT",
               "displayName": "$DISPLAY_NAME",
               "description": "$DESCRIPTION",
               "icon": "$ICON"
             }
           EOF
+            fi
             
             echo "  ✓ Added to index"
           done
