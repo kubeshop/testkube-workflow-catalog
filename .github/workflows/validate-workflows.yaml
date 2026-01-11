@@ -218,10 +218,4 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: workflows/
-          config_data: |
-            extends: relaxed
-            rules:
-              line-length:
-                max: 200
-              truthy:
-                check-keys: false
+          config_file: .yamllint.yaml

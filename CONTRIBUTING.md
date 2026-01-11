@@ -4,11 +4,42 @@ Thank you for your interest in contributing to the Testkube Infrastructure Valid
 
 ## Table of Contents
 
+- [Development Setup](#development-setup)
 - [Adding a New Workflow](#adding-a-new-workflow)
 - [Image Security Requirements](#image-security-requirements)
 - [Metadata Requirements](#metadata-requirements)
 - [Testing Your Workflow](#testing-your-workflow)
 - [Pull Request Process](#pull-request-process)
+
+---
+
+## Development Setup
+
+### Pre-commit Hooks (Recommended)
+
+This repository uses [pre-commit](https://pre-commit.com/) to automatically run `yamllint` on workflow files before each commit.
+
+**Install pre-commit:**
+
+```bash
+# macOS (using Homebrew)
+brew install pre-commit
+
+# Linux (using pip)
+pip install pre-commit
+```
+
+**Enable the hooks in your local clone:**
+
+```bash
+pre-commit install
+```
+
+Now `yamllint` will automatically run on any modified workflow files when you commit. To manually run on all files:
+
+```bash
+pre-commit run --all-files
+```
 
 ---
 
@@ -182,6 +213,21 @@ spec:
 Before submitting a PR, verify your workflow:
 
 ### 1. YAML Validation
+
+First, install `yamllint` if you don't have it:
+
+```bash
+# macOS (using Homebrew)
+brew install yamllint
+
+# Linux (Debian/Ubuntu)
+sudo apt-get install yamllint
+
+# Using pip (any platform)
+pip install yamllint
+```
+
+Then validate your workflow (the `.yamllint.yaml` config file in the repo root will be used automatically):
 
 ```bash
 # Validate YAML syntax

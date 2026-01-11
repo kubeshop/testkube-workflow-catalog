@@ -1,0 +1,10 @@
+# yamllint configuration
+# This configuration mirrors the settings used in CI (.github/workflows/validate-workflows.yaml)
+
+extends: relaxed
+
+rules:
+  line-length:
+    max: 200
+  truthy:
+    check-keys: false
