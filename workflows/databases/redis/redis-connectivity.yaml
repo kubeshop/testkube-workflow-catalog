@@ -1,0 +1,106 @@
+apiVersion: testworkflows.testkube.io/v1
+kind: TestWorkflow
+metadata:
+  name: redis-connectivity
+  labels:
+    testkube.io/category: databases
+    testkube.io/component: redis
+    testkube.io/validation-type: connectivity
+  annotations:
+    testkube.io/display-name: "Redis Connectivity Check"
+    testkube.io/description: "Validates Redis server connectivity with PING and basic GET/SET operations"
+    testkube.io/icon: redis
+    testkube.io/tags: "redis,connectivity,health-check,database"
+
+spec:
+  config:
+    host:
+      type: string
+      default: "redis.default.svc.cluster.local"
+      description: "Redis host address"
+    port:
+      type: string
+      default: "6379"
+      description: "Redis port"
+    password:
+      type: string
+      default: ""
+      sensitive: true
+      description: "Redis password (leave empty if no auth)"
+    db:
+      type: string
+      default: "0"
+      description: "Redis database number"
+
+  steps:
+    - name: "Validate Redis Connectivity"
+      run:
+        # Redis 7 Alpine - digest pinned for security
+        # To update: docker pull redis:7-alpine && docker inspect --format='{{index .RepoDigests 0}}' redis:7-alpine
+        image: docker.io/library/redis:7-alpine@sha256:de13e74e14b98eb96bdf886791571a2a48f4f48d4540c4572bfb2c3ee6d77d93
+        shell: |
+          echo "============================================"
+          echo "  Redis Connectivity Validation"
+          echo "============================================"
+          echo ""
+          echo "Target: {{ config.host }}:{{ config.port }}"
+          echo "Database: {{ config.db }}"
+          echo ""
+
+          # Build redis-cli arguments
+          REDIS_ARGS="-h {{ config.host }} -p {{ config.port }} -n {{ config.db }}"
+          {{- if config.password }}
+          REDIS_ARGS="$REDIS_ARGS -a {{ config.password }}"
+          export REDISCLI_AUTH="{{ config.password }}"
+          {{- end }}
+
+          # Test 1: PING
+          echo ">>> Test 1: PING"
+          RESULT=$(redis-cli $REDIS_ARGS PING 2>&1)
+          if [ "$RESULT" = "PONG" ]; then
+            echo "✓ PING successful: $RESULT"
+          else
+            echo "✗ PING failed: $RESULT"
+            exit 1
+          fi
+          echo ""
+
+          # Test 2: SET operation
+          echo ">>> Test 2: SET operation"
+          TEST_KEY="testkube:validation:$(date +%s)"
+          TEST_VALUE="connectivity-test-$(date +%s)"
+
+          SET_RESULT=$(redis-cli $REDIS_ARGS SET "$TEST_KEY" "$TEST_VALUE" EX 60 2>&1)
+          if [ "$SET_RESULT" = "OK" ]; then
+            echo "✓ SET successful"
+          else
+            echo "✗ SET failed: $SET_RESULT"
+            exit 1
+          fi
+          echo ""
+
+          # Test 3: GET operation
+          echo ">>> Test 3: GET operation"
+          GET_RESULT=$(redis-cli $REDIS_ARGS GET "$TEST_KEY" 2>&1)
+          if [ "$GET_RESULT" = "$TEST_VALUE" ]; then
+            echo "✓ GET successful: value matches"
+          else
+            echo "✗ GET failed: expected '$TEST_VALUE', got '$GET_RESULT'"
+            exit 1
+          fi
+          echo ""
+
+          # Test 4: DEL (cleanup)
+          echo ">>> Test 4: Cleanup"
+          redis-cli $REDIS_ARGS DEL "$TEST_KEY" > /dev/null
+          echo "✓ Test key deleted"
+          echo ""
+
+          # Server info
+          echo ">>> Server Info"
+          redis-cli $REDIS_ARGS INFO server | grep -E "^(redis_version|os:|tcp_port:|uptime)"
+          echo ""
+
+          echo "============================================"
+          echo "  ✓ Redis Connectivity Validation Passed"
+          echo "============================================"

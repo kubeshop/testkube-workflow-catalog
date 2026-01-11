@@ -1,0 +1,114 @@
+apiVersion: testworkflows.testkube.io/v1
+kind: TestWorkflow
+metadata:
+  name: postgresql-connectivity
+  labels:
+    testkube.io/category: databases
+    testkube.io/component: postgresql
+    testkube.io/validation-type: connectivity
+  annotations:
+    testkube.io/display-name: "PostgreSQL Connectivity Check"
+    testkube.io/description: "Validates PostgreSQL server connectivity, authentication, and basic query execution"
+    testkube.io/icon: postgresql
+    testkube.io/tags: "postgresql,postgres,connectivity,health-check,database,sql"
+
+spec:
+  config:
+    host:
+      type: string
+      default: "postgresql.default.svc.cluster.local"
+      description: "PostgreSQL host address"
+    port:
+      type: string
+      default: "5432"
+      description: "PostgreSQL port"
+    database:
+      type: string
+      default: "postgres"
+      description: "Database name to connect to"
+    username:
+      type: string
+      default: "postgres"
+      description: "PostgreSQL username"
+    password:
+      type: string
+      default: ""
+      sensitive: true
+      description: "PostgreSQL password"
+
+  steps:
+    - name: "Validate PostgreSQL Connectivity"
+      run:
+        # PostgreSQL 16 Alpine - digest pinned for security
+        # To update: docker pull postgres:16-alpine && docker inspect --format='{{index .RepoDigests 0}}' postgres:16-alpine
+        image: docker.io/library/postgres:16-alpine@sha256:acf5667d4ee0a7d4e9e4a3cfec41e451721e0527c65c638f5e54e78a02fe4c3f
+        env:
+          - name: PGHOST
+            value: "{{ config.host }}"
+          - name: PGPORT
+            value: "{{ config.port }}"
+          - name: PGDATABASE
+            value: "{{ config.database }}"
+          - name: PGUSER
+            value: "{{ config.username }}"
+          - name: PGPASSWORD
+            value: "{{ config.password }}"
+        shell: |
+          echo "============================================"
+          echo "  PostgreSQL Connectivity Validation"
+          echo "============================================"
+          echo ""
+          echo "Target: $PGHOST:$PGPORT"
+          echo "Database: $PGDATABASE"
+          echo "User: $PGUSER"
+          echo ""
+
+          # Test 1: Basic connection
+          echo ">>> Test 1: Connection"
+          if psql -c "SELECT 1" > /dev/null 2>&1; then
+            echo "✓ Connection successful"
+          else
+            echo "✗ Connection failed"
+            psql -c "SELECT 1" 2>&1 || true
+            exit 1
+          fi
+          echo ""
+
+          # Test 2: Server version
+          echo ">>> Test 2: Server Version"
+          VERSION=$(psql -t -c "SELECT version()" | head -1 | xargs)
+          echo "✓ $VERSION"
+          echo ""
+
+          # Test 3: Create temp table and insert
+          echo ">>> Test 3: Write Operation"
+          TEST_TABLE="testkube_validation_$(date +%s)"
+          psql -c "CREATE TEMP TABLE $TEST_TABLE (id serial, value text, created_at timestamp default now())"
+          psql -c "INSERT INTO $TEST_TABLE (value) VALUES ('connectivity-test')"
+          echo "✓ Table created and data inserted"
+          echo ""
+
+          # Test 4: Read back
+          echo ">>> Test 4: Read Operation"
+          RESULT=$(psql -t -c "SELECT value FROM $TEST_TABLE WHERE id = 1" | xargs)
+          if [ "$RESULT" = "connectivity-test" ]; then
+            echo "✓ Data read successfully: $RESULT"
+          else
+            echo "✗ Read failed: expected 'connectivity-test', got '$RESULT'"
+            exit 1
+          fi
+          echo ""
+
+          # Test 5: Check database stats
+          echo ">>> Test 5: Database Stats"
+          psql -c "SELECT 
+            current_database() as database,
+            pg_size_pretty(pg_database_size(current_database())) as size,
+            (SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()) as connections"
+          echo ""
+
+          # Temp table is automatically dropped when session ends
+
+          echo "============================================"
+          echo "  ✓ PostgreSQL Connectivity Validation Passed"
+          echo "============================================"

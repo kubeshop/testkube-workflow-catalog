@@ -1,0 +1,39 @@
+# Approved Image Registries and Images
+# 
+# This file defines which container images are permitted in workflows.
+# CI automatically validates all PRs against this allowlist.
+#
+# To request a new registry or image, open an issue with:
+# - Registry/image name
+# - Justification for inclusion
+# - Link to security/verification info
+
+# Approved registry prefixes
+# Images starting with any of these prefixes are allowed
+registries:
+  # Official Docker Hub images (e.g., redis, postgres, nginx)
+  - "docker.io/library/"
+  
+  # Bitnami - verified, regularly updated images
+  - "docker.io/bitnami/"
+  
+  # Chainguard - hardened, minimal images with SBOMs
+  - "cgr.dev/chainguard/"
+  
+  # Google Distroless - minimal runtime images
+  - "gcr.io/distroless/"
+  
+  # Official Prometheus project images
+  - "quay.io/prometheus/"
+  
+  # Official Grafana images
+  - "docker.io/grafana/"
+  
+  # Official curl image
+  - "docker.io/curlimages/"
+  
+  # Confluent (Kafka ecosystem)
+  - "docker.io/confluentinc/"
+
+# Note: All images must also use digest pinning (@sha256:...)
+# Tags alone (even from approved registries) are not permitted

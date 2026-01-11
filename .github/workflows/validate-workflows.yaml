@@ -1,0 +1,227 @@
+name: Validate Workflows
+
+on:
+  pull_request:
+    paths:
+      - 'workflows/**/*.yaml'
+      - 'workflows/**/*.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'workflows/**/*.yaml'
+      - 'workflows/**/*.yml'
+
+jobs:
+  validate-images:
+    name: Validate Image Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Extract images from workflows
+        id: extract
+        run: |
+          echo "Extracting images from workflow files..."
+          
+          # Find all image references in workflow files
+          IMAGES=$(grep -rh "image:" workflows/ 2>/dev/null | \
+                   sed 's/.*image:\s*//' | \
+                   sed 's/["'\'']//g' | \
+                   sed 's/\s*#.*//' | \
+                   grep -v '^\s*$' | \
+                   sort -u || true)
+          
+          if [ -z "$IMAGES" ]; then
+            echo "No images found in workflows"
+            exit 0
+          fi
+          
+          echo "Found images:"
+          echo "$IMAGES"
+          echo ""
+          
+          # Save for next steps
+          echo "$IMAGES" > /tmp/images.txt
+
+      - name: Validate approved registries
+        run: |
+          if [ ! -f /tmp/images.txt ]; then
+            echo "No images to validate"
+            exit 0
+          fi
+          
+          echo "=== Validating Image Registries ==="
+          echo ""
+          
+          # Load approved registries
+          REGISTRIES=$(yq '.registries[]' .github/approved-images.yaml)
+          
+          FAILED=0
+          while IFS= read -r img; do
+            [ -z "$img" ] && continue
+            
+            # Normalize image name (add docker.io/library/ for official images)
+            NORMALIZED="$img"
+            if [[ ! "$img" =~ "/" ]]; then
+              NORMALIZED="docker.io/library/$img"
+            elif [[ ! "$img" =~ "." && "$img" =~ "/" && ! "$img" =~ "/" ]]; then
+              NORMALIZED="docker.io/$img"
+            fi
+            
+            ALLOWED=false
+            for registry in $REGISTRIES; do
+              if [[ "$NORMALIZED" == "$registry"* ]]; then
+                ALLOWED=true
+                break
+              fi
+            done
+            
+            if [ "$ALLOWED" = true ]; then
+              echo "✓ Approved: $img"
+            else
+              echo "✗ REJECTED: $img"
+              echo "  Image is not from an approved registry"
+              FAILED=1
+            fi
+          done < /tmp/images.txt
+          
+          echo ""
+          if [ $FAILED -eq 1 ]; then
+            echo "❌ Some images are from unapproved registries"
+            echo "See .github/approved-images.yaml for allowed registries"
+            exit 1
+          else
+            echo "✅ All images are from approved registries"
+          fi
+
+      - name: Validate digest pinning
+        run: |
+          if [ ! -f /tmp/images.txt ]; then
+            echo "No images to validate"
+            exit 0
+          fi
+          
+          echo "=== Validating Digest Pinning ==="
+          echo ""
+          
+          FAILED=0
+          while IFS= read -r img; do
+            [ -z "$img" ] && continue
+            
+            if [[ "$img" =~ @sha256: ]]; then
+              echo "✓ Pinned: $img"
+            else
+              echo "✗ NOT PINNED: $img"
+              echo "  Image must use @sha256:... digest pinning"
+              FAILED=1
+            fi
+          done < /tmp/images.txt
+          
+          echo ""
+          if [ $FAILED -eq 1 ]; then
+            echo "❌ Some images are not digest-pinned"
+            echo "Use 'docker inspect --format={{index .RepoDigests 0}} IMAGE' to get digests"
+            exit 1
+          else
+            echo "✅ All images are properly digest-pinned"
+          fi
+
+  validate-metadata:
+    name: Validate Workflow Metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate required labels and annotations
+        run: |
+          echo "=== Validating Workflow Metadata ==="
+          echo ""
+          
+          FAILED=0
+          
+          for file in $(find workflows -name "*.yaml" -o -name "*.yml" 2>/dev/null); do
+            echo "Checking: $file"
+            
+            # Check required labels
+            CATEGORY=$(yq '.metadata.labels["testkube.io/category"]' "$file" 2>/dev/null)
+            COMPONENT=$(yq '.metadata.labels["testkube.io/component"]' "$file" 2>/dev/null)
+            VALIDATION_TYPE=$(yq '.metadata.labels["testkube.io/validation-type"]' "$file" 2>/dev/null)
+            
+            # Check required annotations
+            DISPLAY_NAME=$(yq '.metadata.annotations["testkube.io/display-name"]' "$file" 2>/dev/null)
+            DESCRIPTION=$(yq '.metadata.annotations["testkube.io/description"]' "$file" 2>/dev/null)
+            
+            FILE_FAILED=0
+            
+            if [ "$CATEGORY" = "null" ] || [ -z "$CATEGORY" ]; then
+              echo "  ✗ Missing label: testkube.io/category"
+              FILE_FAILED=1
+            fi
+            
+            if [ "$COMPONENT" = "null" ] || [ -z "$COMPONENT" ]; then
+              echo "  ✗ Missing label: testkube.io/component"
+              FILE_FAILED=1
+            fi
+            
+            if [ "$VALIDATION_TYPE" = "null" ] || [ -z "$VALIDATION_TYPE" ]; then
+              echo "  ✗ Missing label: testkube.io/validation-type"
+              FILE_FAILED=1
+            fi
+            
+            if [ "$DISPLAY_NAME" = "null" ] || [ -z "$DISPLAY_NAME" ]; then
+              echo "  ✗ Missing annotation: testkube.io/display-name"
+              FILE_FAILED=1
+            fi
+            
+            if [ "$DESCRIPTION" = "null" ] || [ -z "$DESCRIPTION" ]; then
+              echo "  ✗ Missing annotation: testkube.io/description"
+              FILE_FAILED=1
+            fi
+            
+            if [ $FILE_FAILED -eq 0 ]; then
+              echo "  ✓ All required metadata present"
+            else
+              FAILED=1
+            fi
+            
+            echo ""
+          done
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "❌ Some workflows are missing required metadata"
+            exit 1
+          else
+            echo "✅ All workflows have required metadata"
+          fi
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: workflows/
+          config_data: |
+            extends: relaxed
+            rules:
+              line-length:
+                max: 200
+              truthy:
+                check-keys: false
