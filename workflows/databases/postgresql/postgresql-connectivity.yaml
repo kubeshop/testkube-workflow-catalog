@@ -37,23 +37,23 @@ spec:
       description: "PostgreSQL password"
 
   steps:
-    - name: "Validate PostgreSQL Connectivity"
-      run:
-        # PostgreSQL 16 Alpine - digest pinned for security
-        # To update: docker pull postgres:16-alpine && docker inspect --format='{{index .RepoDigests 0}}' postgres:16-alpine
-        image: docker.io/library/postgres:16-alpine@sha256:acf5667d4ee0a7d4e9e4a3cfec41e451721e0527c65c638f5e54e78a02fe4c3f
-        env:
-          - name: PGHOST
-            value: "{{ config.host }}"
-          - name: PGPORT
-            value: "{{ config.port }}"
-          - name: PGDATABASE
-            value: "{{ config.database }}"
-          - name: PGUSER
-            value: "{{ config.username }}"
-          - name: PGPASSWORD
-            value: "{{ config.password }}"
-        shell: |
+  - name: "Validate PostgreSQL Connectivity"
+    run:
+      # PostgreSQL 16 Alpine - digest pinned for security
+      # To update: docker pull postgres:16-alpine && docker inspect --format='{{index .RepoDigests 0}}' postgres:16-alpine
+      image: docker.io/library/postgres:16-alpine@sha256:acf5667d4ee0a7d4e9e4a3cfec41e451721e0527c65c638f5e54e78a02fe4c3f
+      env:
+      - name: PGHOST
+        value: "{{ config.host }}"
+      - name: PGPORT
+        value: "{{ config.port }}"
+      - name: PGDATABASE
+        value: "{{ config.database }}"
+      - name: PGUSER
+        value: "{{ config.username }}"
+      - name: PGPASSWORD
+        value: "{{ config.password }}"
+      cmd: |
           echo "============================================"
           echo "  PostgreSQL Connectivity Validation"
           echo "============================================"

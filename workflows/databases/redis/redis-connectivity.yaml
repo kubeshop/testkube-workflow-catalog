@@ -33,12 +33,12 @@ spec:
       description: "Redis database number"
 
   steps:
-    - name: "Validate Redis Connectivity"
-      run:
-        # Redis 7 Alpine - digest pinned for security
-        # To update: docker pull redis:7-alpine && docker inspect --format='{{index .RepoDigests 0}}' redis:7-alpine
-        image: docker.io/library/redis:7-alpine@sha256:de13e74e14b98eb96bdf886791571a2a48f4f48d4540c4572bfb2c3ee6d77d93
-        shell: |
+  - name: "Validate Redis Connectivity"
+    run:
+      # Redis 7 Alpine - digest pinned for security
+      # To update: docker pull redis:7-alpine && docker inspect --format='{{index .RepoDigests 0}}' redis:7-alpine
+      image: docker.io/library/redis:7-alpine@sha256:de13e74e14b98eb96bdf886791571a2a48f4f48d4540c4572bfb2c3ee6d77d93
+      cmd: |
           echo "============================================"
           echo "  Redis Connectivity Validation"
           echo "============================================"

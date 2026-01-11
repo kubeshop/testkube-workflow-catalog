@@ -28,12 +28,12 @@ spec:
       description: "Topic name for produce/consume test (will be auto-created if allowed)"
 
   steps:
-    - name: "Validate Kafka Connectivity"
-      run:
-        # Bitnami Kafka - includes kafka CLI tools, digest pinned for security
-        # To update: docker pull bitnami/kafka:latest && docker inspect --format='{{index .RepoDigests 0}}' bitnami/kafka:latest
-        image: docker.io/bitnami/kafka:3.6@sha256:4a58c950bf50eaf694c9aa74e1b9da4e3e4f1a04214c26dfd6a05c4c9cb103fd
-        shell: |
+  - name: "Validate Kafka Connectivity"
+    run:
+      # Bitnami Kafka - includes kafka CLI tools, digest pinned for security
+      # To update: docker pull bitnami/kafka:latest && docker inspect --format='{{index .RepoDigests 0}}' bitnami/kafka:latest
+      image: docker.io/bitnami/kafka:3.6@sha256:4a58c950bf50eaf694c9aa74e1b9da4e3e4f1a04214c26dfd6a05c4c9cb103fd
+      cmd: |
           echo "============================================"
           echo "  Kafka Connectivity Validation"
           echo "============================================"
