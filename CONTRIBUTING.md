@@ -167,9 +167,23 @@ metadata:
 ```yaml
 metadata:
   annotations:
-    testkube.io/icon: "component-name"           # For UI display
-    testkube.io/tags: "keyword1,keyword2"        # For search
+    testkube.io/icon: "https://cdn.simpleicons.org/<component>"  # Icon URL (see below)
+    testkube.io/tags: "keyword1,keyword2"                        # For search
 ```
+
+#### Finding Icon URLs
+
+Use [Simple Icons](https://simpleicons.org/) CDN for component icons:
+
+1. Search for your component at [simpleicons.org](https://simpleicons.org/)
+2. Use the URL pattern: `https://cdn.simpleicons.org/<slug>`
+
+Examples:
+- PostgreSQL: `https://cdn.simpleicons.org/postgresql`
+- Redis: `https://cdn.simpleicons.org/redis`
+- Apache Kafka: `https://cdn.simpleicons.org/apachekafka`
+- MongoDB: `https://cdn.simpleicons.org/mongodb`
+- RabbitMQ: `https://cdn.simpleicons.org/rabbitmq`
 
 ---
 

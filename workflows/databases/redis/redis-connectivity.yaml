@@ -9,7 +9,7 @@ metadata:
   annotations:
     testkube.io/display-name: "Redis Connectivity Check"
     testkube.io/description: "Validates Redis server connectivity with PING and basic GET/SET operations"
-    testkube.io/icon: redis
+    testkube.io/icon: "https://cdn.simpleicons.org/redis"
     testkube.io/tags: "redis,connectivity,health-check,database"
 
 spec:

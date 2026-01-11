@@ -9,7 +9,7 @@ metadata:
   annotations:
     testkube.io/display-name: "PostgreSQL Connectivity Check"
     testkube.io/description: "Validates PostgreSQL server connectivity, authentication, and basic query execution"
-    testkube.io/icon: postgresql
+    testkube.io/icon: "https://cdn.simpleicons.org/postgresql"
     testkube.io/tags: "postgresql,postgres,connectivity,health-check,database,sql"
 
 spec:

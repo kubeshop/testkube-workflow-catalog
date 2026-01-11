@@ -9,7 +9,7 @@ metadata:
   annotations:
     testkube.io/display-name: "Kafka Connectivity Check"
     testkube.io/description: "Validates Kafka broker connectivity, topic listing, and basic produce/consume operations"
-    testkube.io/icon: kafka
+    testkube.io/icon: "https://cdn.simpleicons.org/apachekafka"
     testkube.io/tags: "kafka,messaging,connectivity,broker,streaming"
 
 spec:
