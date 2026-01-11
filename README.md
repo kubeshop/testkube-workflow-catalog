@@ -61,18 +61,18 @@ All workflows include standardized metadata for easy discovery:
 
 | Label | Purpose | Values |
 |-------|---------|--------|
-| `testkube.io/category` | Infrastructure type | `databases`, `messaging`, `caching`, `storage`, `networking`, `observability`, `security` |
-| `testkube.io/component` | Specific component | `redis`, `postgresql`, `kafka`, etc. |
-| `testkube.io/validation-type` | What's being validated | `connectivity`, `health`, `performance`, `security` |
+| `catalog.testkube.io/category` | Infrastructure type | `databases`, `messaging`, `caching`, `storage`, `networking`, `observability`, `security` |
+| `catalog.testkube.io/component` | Specific component | `redis`, `postgresql`, `kafka`, etc. |
+| `catalog.testkube.io/validation-type` | What's being validated | `connectivity`, `health`, `performance`, `security` |
 
 ### Annotations (for display)
 
 | Annotation | Purpose |
 |------------|---------|
-| `testkube.io/display-name` | Human-readable name |
-| `testkube.io/description` | What the workflow validates |
-| `testkube.io/icon` | Icon identifier for UIs |
-| `testkube.io/tags` | Search keywords |
+| `catalog.testkube.io/display-name` | Human-readable name |
+| `catalog.testkube.io/description` | What the workflow validates |
+| `catalog.testkube.io/icon` | Icon identifier for UIs |
+| `catalog.testkube.io/tags` | Search keywords |
 
 ## Security
 

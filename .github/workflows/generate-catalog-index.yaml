@@ -41,12 +41,12 @@ jobs:
             
             # Extract metadata from workflow
             NAME=$(yq '.metadata.name' "$file" 2>/dev/null)
-            CATEGORY=$(yq '.metadata.labels["testkube.io/category"]' "$file" 2>/dev/null)
-            COMPONENT=$(yq '.metadata.labels["testkube.io/component"]' "$file" 2>/dev/null)
-            VALIDATION_TYPE=$(yq '.metadata.labels["testkube.io/validation-type"]' "$file" 2>/dev/null)
-            DISPLAY_NAME=$(yq '.metadata.annotations["testkube.io/display-name"]' "$file" 2>/dev/null)
-            DESCRIPTION=$(yq '.metadata.annotations["testkube.io/description"]' "$file" 2>/dev/null)
-            ICON=$(yq '.metadata.annotations["testkube.io/icon"]' "$file" 2>/dev/null)
+            CATEGORY=$(yq '.metadata.labels["catalog.testkube.io/category"]' "$file" 2>/dev/null)
+            COMPONENT=$(yq '.metadata.labels["catalog.testkube.io/component"]' "$file" 2>/dev/null)
+            VALIDATION_TYPE=$(yq '.metadata.labels["catalog.testkube.io/validation-type"]' "$file" 2>/dev/null)
+            DISPLAY_NAME=$(yq '.metadata.annotations["catalog.testkube.io/display-name"]' "$file" 2>/dev/null)
+            DESCRIPTION=$(yq '.metadata.annotations["catalog.testkube.io/description"]' "$file" 2>/dev/null)
+            ICON=$(yq '.metadata.annotations["catalog.testkube.io/icon"]' "$file" 2>/dev/null)
             
             # Skip if missing required fields
             if [ "$CATEGORY" = "null" ] || [ -z "$CATEGORY" ]; then

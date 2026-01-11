@@ -146,9 +146,9 @@ Every workflow **must** include these labels:
 ```yaml
 metadata:
   labels:
-    testkube.io/category: "<category>"           # databases, messaging, etc.
-    testkube.io/component: "<component>"         # redis, kafka, etc.
-    testkube.io/validation-type: "<type>"        # connectivity, health, performance, security, ei
+    catalog.testkube.io/category: "<category>"           # databases, messaging, etc.
+    catalog.testkube.io/component: "<component>"         # redis, kafka, etc.
+    catalog.testkube.io/validation-type: "<type>"        # connectivity, health, performance, security, ei
 ```
 
 ### Required Annotations
@@ -158,8 +158,8 @@ Every workflow **must** include these annotations:
 ```yaml
 metadata:
   annotations:
-    testkube.io/display-name: "Human Readable Name"
-    testkube.io/description: "Clear description of what this workflow validates"
+    catalog.testkube.io/display-name: "Human Readable Name"
+    catalog.testkube.io/description: "Clear description of what this workflow validates"
 ```
 
 ### Recommended Annotations
@@ -167,8 +167,8 @@ metadata:
 ```yaml
 metadata:
   annotations:
-    testkube.io/icon: "https://cdn.simpleicons.org/<component>"  # Icon URL (see below)
-    testkube.io/tags: "keyword1,keyword2"                        # For search
+    catalog.testkube.io/icon: "https://cdn.simpleicons.org/<component>"  # Icon URL (see below)
+    catalog.testkube.io/tags: "keyword1,keyword2"                        # For search
 ```
 
 #### Finding Icon URLs

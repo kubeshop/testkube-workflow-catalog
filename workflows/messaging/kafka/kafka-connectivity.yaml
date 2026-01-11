@@ -1,16 +1,16 @@
-apiVersion: testworkflows.testkube.io/v1
+apiVersion: testworkflows.catalog.testkube.io/v1
 kind: TestWorkflow
 metadata:
   name: kafka-connectivity
   labels:
-    testkube.io/category: messaging
-    testkube.io/component: kafka
-    testkube.io/validation-type: connectivity
+    catalog.testkube.io/category: messaging
+    catalog.testkube.io/component: kafka
+    catalog.testkube.io/validation-type: connectivity
   annotations:
-    testkube.io/display-name: "Kafka Connectivity Check"
-    testkube.io/description: "Validates Kafka broker connectivity, topic listing, and basic produce/consume operations"
-    testkube.io/icon: "https://cdn.simpleicons.org/apachekafka"
-    testkube.io/tags: "kafka,messaging,connectivity,broker,streaming"
+    catalog.testkube.io/display-name: "Kafka Connectivity Check"
+    catalog.testkube.io/description: "Validates Kafka broker connectivity, topic listing, and basic produce/consume operations"
+    catalog.testkube.io/icon: "https://cdn.simpleicons.org/apachekafka"
+    catalog.testkube.io/tags: "kafka,messaging,connectivity,broker,streaming"
 
 spec:
   config:

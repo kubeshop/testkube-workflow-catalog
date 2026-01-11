@@ -1,16 +1,16 @@
-apiVersion: testworkflows.testkube.io/v1
+apiVersion: testworkflows.catalog.testkube.io/v1
 kind: TestWorkflow
 metadata:
   name: redis-connectivity
   labels:
-    testkube.io/category: databases
-    testkube.io/component: redis
-    testkube.io/validation-type: connectivity
+    catalog.testkube.io/category: databases
+    catalog.testkube.io/component: redis
+    catalog.testkube.io/validation-type: connectivity
   annotations:
-    testkube.io/display-name: "Redis Connectivity Check"
-    testkube.io/description: "Validates Redis server connectivity with PING and basic GET/SET operations"
-    testkube.io/icon: "https://cdn.simpleicons.org/redis"
-    testkube.io/tags: "redis,connectivity,health-check,database"
+    catalog.testkube.io/display-name: "Redis Connectivity Check"
+    catalog.testkube.io/description: "Validates Redis server connectivity with PING and basic GET/SET operations"
+    catalog.testkube.io/icon: "https://cdn.simpleicons.org/redis"
+    catalog.testkube.io/tags: "redis,connectivity,health-check,database"
 
 spec:
   config:
