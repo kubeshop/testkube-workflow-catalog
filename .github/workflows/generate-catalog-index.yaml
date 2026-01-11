@@ -1,0 +1,102 @@
+name: Generate Catalog Index
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'workflows/**/*.yaml'
+      - 'workflows/**/*.yml'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  generate-index:
+    name: Generate Catalog Index
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Generate catalog index
+        run: |
+          echo "=== Generating Catalog Index ==="
+          echo ""
+          
+          # Start JSON array
+          echo "[" > catalog-index.json
+          FIRST=true
+          
+          for file in $(find workflows -name "*.yaml" -o -name "*.yml" 2>/dev/null | sort); do
+            # Skip README files
+            if [[ "$file" == *"README"* ]]; then
+              continue
+            fi
+            
+            echo "Processing: $file"
+            
+            # Extract metadata from workflow
+            NAME=$(yq '.metadata.name' "$file" 2>/dev/null)
+            CATEGORY=$(yq '.metadata.labels["testkube.io/category"]' "$file" 2>/dev/null)
+            COMPONENT=$(yq '.metadata.labels["testkube.io/component"]' "$file" 2>/dev/null)
+            VALIDATION_TYPE=$(yq '.metadata.labels["testkube.io/validation-type"]' "$file" 2>/dev/null)
+            DISPLAY_NAME=$(yq '.metadata.annotations["testkube.io/display-name"]' "$file" 2>/dev/null)
+            DESCRIPTION=$(yq '.metadata.annotations["testkube.io/description"]' "$file" 2>/dev/null)
+            ICON=$(yq '.metadata.annotations["testkube.io/icon"]' "$file" 2>/dev/null)
+            
+            # Skip if missing required fields
+            if [ "$CATEGORY" = "null" ] || [ -z "$CATEGORY" ]; then
+              echo "  Skipping: missing category"
+              continue
+            fi
+            
+            # Handle null values
+            [ "$DISPLAY_NAME" = "null" ] && DISPLAY_NAME=""
+            [ "$DESCRIPTION" = "null" ] && DESCRIPTION=""
+            [ "$ICON" = "null" ] && ICON=""
+            [ "$VALIDATION_TYPE" = "null" ] && VALIDATION_TYPE=""
+            
+            # Add comma before entries (except first)
+            if [ "$FIRST" = true ]; then
+              FIRST=false
+            else
+              echo "," >> catalog-index.json
+            fi
+            
+            # Write JSON entry
+            cat >> catalog-index.json << EOF
+            {
+              "path": "$file",
+              "name": "$NAME",
+              "category": "$CATEGORY",
+              "component": "$COMPONENT",
+              "validationType": "$VALIDATION_TYPE",
+              "displayName": "$DISPLAY_NAME",
+              "description": "$DESCRIPTION",
+              "icon": "$ICON"
+            }
+          EOF
+            
+            echo "  ✓ Added to index"
+          done
+          
+          # Close JSON array
+          echo "]" >> catalog-index.json
+          
+          # Format JSON
+          cat catalog-index.json | jq '.' > catalog-index.tmp && mv catalog-index.tmp catalog-index.json
+          
+          echo ""
+          echo "=== Catalog Index Generated ==="
+          echo "Entries: $(jq length catalog-index.json)"
+          cat catalog-index.json
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update catalog index [skip ci]"
+          file_pattern: catalog-index.json
