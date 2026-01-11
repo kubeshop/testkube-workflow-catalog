@@ -7,7 +7,7 @@
     "validationType": "connectivity",
     "displayName": "PostgreSQL Connectivity Check",
     "description": "Validates PostgreSQL server connectivity, authentication, and basic query execution",
-    "icon": "postgresql"
+    "icon": "https://cdn.simpleicons.org/postgresql"
   },
   {
     "path": "workflows/databases/redis/redis-connectivity.yaml",
@@ -17,7 +17,7 @@
     "validationType": "connectivity",
     "displayName": "Redis Connectivity Check",
     "description": "Validates Redis server connectivity with PING and basic GET/SET operations",
-    "icon": "redis"
+    "icon": "https://cdn.simpleicons.org/redis"
   },
   {
     "path": "workflows/messaging/kafka/kafka-connectivity.yaml",
@@ -27,6 +27,6 @@
     "validationType": "connectivity",
     "displayName": "Kafka Connectivity Check",
     "description": "Validates Kafka broker connectivity, topic listing, and basic produce/consume operations",
-    "icon": "kafka"
+    "icon": "https://cdn.simpleicons.org/apachekafka"
   }
 ]
