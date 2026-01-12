@@ -4,29 +4,29 @@
     "name": "postgresql-connectivity",
     "category": "databases",
     "component": "postgresql",
-    "validationType": "connectivity",
     "displayName": "PostgreSQL Connectivity Check",
     "description": "Validates PostgreSQL server connectivity, authentication, and basic query execution",
-    "icon": "https://cdn.simpleicons.org/postgresql"
+    "icon": "https://cdn.simpleicons.org/postgresql",
+    "readme": "workflows/databases/postgresql/README.md"
   },
   {
     "path": "workflows/databases/redis/redis-connectivity.yaml",
     "name": "redis-connectivity",
     "category": "databases",
     "component": "redis",
-    "validationType": "connectivity",
     "displayName": "Redis Connectivity Check",
     "description": "Validates Redis server connectivity with PING and basic GET/SET operations",
-    "icon": "https://cdn.simpleicons.org/redis"
+    "icon": "https://cdn.simpleicons.org/redis",
+    "readme": "workflows/databases/redis/README.md"
   },
   {
     "path": "workflows/messaging/kafka/kafka-connectivity.yaml",
     "name": "kafka-connectivity",
     "category": "messaging",
     "component": "kafka",
-    "validationType": "connectivity",
     "displayName": "Kafka Connectivity Check",
     "description": "Validates Kafka broker connectivity, topic listing, and basic produce/consume operations",
-    "icon": "https://cdn.simpleicons.org/apachekafka"
+    "icon": "https://cdn.simpleicons.org/apachekafka",
+    "readme": "workflows/messaging/kafka/README.md"
   }
 ]
