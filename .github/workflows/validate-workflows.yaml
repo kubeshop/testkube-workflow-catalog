@@ -11,6 +11,7 @@ on:
     paths:
       - 'workflows/**/*.yaml'
       - 'workflows/**/*.yml'
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   validate-images:
