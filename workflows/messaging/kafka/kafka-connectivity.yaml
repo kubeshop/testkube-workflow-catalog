@@ -30,91 +30,89 @@ spec:
   steps:
   - name: "Validate Kafka Connectivity"
     run:
-      # Bitnami Kafka - includes kafka CLI tools, digest pinned for security
-      # To update: docker pull bitnami/kafka:latest && docker inspect --format='{{index .RepoDigests 0}}' bitnami/kafka:latest
       image: docker.io/bitnami/kafka:3.6@sha256:4a58c950bf50eaf694c9aa74e1b9da4e3e4f1a04214c26dfd6a05c4c9cb103fd
-      cmd: |
-          echo "============================================"
-          echo "  Kafka Connectivity Validation"
-          echo "============================================"
-          echo ""
-          echo "Bootstrap Servers: {{ config.bootstrap_servers }}"
-          echo "Security Protocol: {{ config.security_protocol }}"
-          echo "Test Topic: {{ config.test_topic }}"
-          echo ""
+      shell: |
+        echo "============================================"
+        echo "  Kafka Connectivity Validation"
+        echo "============================================"
+        echo ""
+        echo "Bootstrap Servers: {{ config.bootstrap_servers }}"
+        echo "Security Protocol: {{ config.security_protocol }}"
+        echo "Test Topic: {{ config.test_topic }}"
+        echo ""
 
-          # Common arguments
-          KAFKA_ARGS="--bootstrap-server {{ config.bootstrap_servers }}"
+        # Common arguments
+        KAFKA_ARGS="--bootstrap-server {{ config.bootstrap_servers }}"
 
-          # Test 1: Broker connectivity via metadata
-          echo ">>> Test 1: Broker Connectivity"
-          if kafka-broker-api-versions.sh $KAFKA_ARGS > /dev/null 2>&1; then
-            echo "✓ Successfully connected to Kafka brokers"
+        # Test 1: Broker connectivity via metadata
+        echo ">>> Test 1: Broker Connectivity"
+        if kafka-broker-api-versions.sh $KAFKA_ARGS > /dev/null 2>&1; then
+          echo "✓ Successfully connected to Kafka brokers"
+        else
+          echo "✗ Failed to connect to Kafka brokers"
+          kafka-broker-api-versions.sh $KAFKA_ARGS 2>&1 || true
+          exit 1
+        fi
+        echo ""
+
+        # Test 2: List topics
+        echo ">>> Test 2: List Topics"
+        TOPICS=$(kafka-topics.sh $KAFKA_ARGS --list 2>/dev/null)
+        TOPIC_COUNT=$(echo "$TOPICS" | grep -c "." || echo "0")
+        echo "✓ Found $TOPIC_COUNT topic(s)"
+        if [ -n "$TOPICS" ]; then
+          echo "  Topics: $(echo $TOPICS | tr '\n' ', ' | sed 's/,$//')"
+        fi
+        echo ""
+
+        # Test 3: Describe cluster
+        echo ">>> Test 3: Cluster Info"
+        kafka-metadata.sh $KAFKA_ARGS --snapshot /tmp/meta --command "node" 2>/dev/null || \
+          kafka-broker-api-versions.sh $KAFKA_ARGS 2>/dev/null | head -5
+        echo ""
+
+        # Test 4: Create test topic (if it doesn't exist)
+        echo ">>> Test 4: Test Topic"
+        if kafka-topics.sh $KAFKA_ARGS --list | grep -q "^{{ config.test_topic }}$"; then
+          echo "✓ Test topic '{{ config.test_topic }}' exists"
+        else
+          echo "  Creating test topic '{{ config.test_topic }}'..."
+          if kafka-topics.sh $KAFKA_ARGS --create --topic {{ config.test_topic }} --partitions 1 --replication-factor 1 2>/dev/null; then
+            echo "✓ Test topic created"
           else
-            echo "✗ Failed to connect to Kafka brokers"
-            kafka-broker-api-versions.sh $KAFKA_ARGS 2>&1 || true
-            exit 1
+            echo "⚠ Could not create test topic (may require admin permissions)"
+            echo "  Skipping produce/consume test"
+            echo ""
+            echo "============================================"
+            echo "  ✓ Kafka Basic Connectivity Passed"
+            echo "============================================"
+            exit 0
           fi
-          echo ""
+        fi
+        echo ""
 
-          # Test 2: List topics
-          echo ">>> Test 2: List Topics"
-          TOPICS=$(kafka-topics.sh $KAFKA_ARGS --list 2>/dev/null)
-          TOPIC_COUNT=$(echo "$TOPICS" | grep -c "." || echo "0")
-          echo "✓ Found $TOPIC_COUNT topic(s)"
-          if [ -n "$TOPICS" ]; then
-            echo "  Topics: $(echo $TOPICS | tr '\n' ', ' | sed 's/,$//')"
-          fi
-          echo ""
+        # Test 5: Produce message
+        echo ">>> Test 5: Produce Message"
+        TEST_MESSAGE="testkube-validation-$(date +%s)"
+        echo "$TEST_MESSAGE" | kafka-console-producer.sh $KAFKA_ARGS --topic {{ config.test_topic }} 2>/dev/null
+        echo "✓ Message produced: $TEST_MESSAGE"
+        echo ""
 
-          # Test 3: Describe cluster
-          echo ">>> Test 3: Cluster Info"
-          kafka-metadata.sh $KAFKA_ARGS --snapshot /tmp/meta --command "node" 2>/dev/null || \
-            kafka-broker-api-versions.sh $KAFKA_ARGS 2>/dev/null | head -5
-          echo ""
+        # Test 6: Consume message
+        echo ">>> Test 6: Consume Message"
+        CONSUMED=$(timeout 10 kafka-console-consumer.sh $KAFKA_ARGS \
+          --topic {{ config.test_topic }} \
+          --from-beginning \
+          --max-messages 1 \
+          --timeout-ms 5000 2>/dev/null | tail -1)
 
-          # Test 4: Create test topic (if it doesn't exist)
-          echo ">>> Test 4: Test Topic"
-          if kafka-topics.sh $KAFKA_ARGS --list | grep -q "^{{ config.test_topic }}$"; then
-            echo "✓ Test topic '{{ config.test_topic }}' exists"
-          else
-            echo "  Creating test topic '{{ config.test_topic }}'..."
-            if kafka-topics.sh $KAFKA_ARGS --create --topic {{ config.test_topic }} --partitions 1 --replication-factor 1 2>/dev/null; then
-              echo "✓ Test topic created"
-            else
-              echo "⚠ Could not create test topic (may require admin permissions)"
-              echo "  Skipping produce/consume test"
-              echo ""
-              echo "============================================"
-              echo "  ✓ Kafka Basic Connectivity Passed"
-              echo "============================================"
-              exit 0
-            fi
-          fi
-          echo ""
+        if [ -n "$CONSUMED" ]; then
+          echo "✓ Message consumed: $CONSUMED"
+        else
+          echo "⚠ No message consumed (topic may be empty or consumer timeout)"
+        fi
+        echo ""
 
-          # Test 5: Produce message
-          echo ">>> Test 5: Produce Message"
-          TEST_MESSAGE="testkube-validation-$(date +%s)"
-          echo "$TEST_MESSAGE" | kafka-console-producer.sh $KAFKA_ARGS --topic {{ config.test_topic }} 2>/dev/null
-          echo "✓ Message produced: $TEST_MESSAGE"
-          echo ""
-
-          # Test 6: Consume message
-          echo ">>> Test 6: Consume Message"
-          CONSUMED=$(timeout 10 kafka-console-consumer.sh $KAFKA_ARGS \
-            --topic {{ config.test_topic }} \
-            --from-beginning \
-            --max-messages 1 \
-            --timeout-ms 5000 2>/dev/null | tail -1)
-
-          if [ -n "$CONSUMED" ]; then
-            echo "✓ Message consumed: $CONSUMED"
-          else
-            echo "⚠ No message consumed (topic may be empty or consumer timeout)"
-          fi
-          echo ""
-
-          echo "============================================"
-          echo "  ✓ Kafka Connectivity Validation Passed"
-          echo "============================================"
+        echo "============================================"
+        echo "  ✓ Kafka Connectivity Validation Passed"
+        echo "============================================"
