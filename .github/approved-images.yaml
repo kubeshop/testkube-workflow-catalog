@@ -14,8 +14,8 @@ registries:
   # Official Docker Hub images (e.g., redis, postgres, nginx)
   - "docker.io/library/"
   
-  # Bitnami - verified, regularly updated images
-  - "docker.io/bitnami/"
+  # Apache - verified, regularly updated images
+  - "docker.io/apache/"
   
   # Chainguard - hardened, minimal images with SBOMs
   - "cgr.dev/chainguard/"
