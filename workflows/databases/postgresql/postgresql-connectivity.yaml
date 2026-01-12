@@ -1,4 +1,4 @@
-apiVersion: testworkflows.catalog.testkube.io/v1
+apiVersion: testworkflows.testkube.io/v1
 kind: TestWorkflow
 metadata:
   name: postgresql-connectivity
