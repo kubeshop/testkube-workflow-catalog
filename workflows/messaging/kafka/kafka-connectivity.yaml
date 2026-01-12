@@ -30,7 +30,7 @@ spec:
   steps:
   - name: "Validate Kafka Connectivity"
     run:
-      image: docker.io/bitnami/kafka:3.6@sha256:4a58c950bf50eaf694c9aa74e1b9da4e3e4f1a04214c26dfd6a05c4c9cb103fd
+      image: docker.io/apache/kafka:4.1.1@sha256:0bc1bb2478f45b6cea78864df86acdc11e8df2c5172477819a4d12942cbe5d40
       shell: |
         echo "============================================"
         echo "  Kafka Connectivity Validation"

@@ -39,7 +39,7 @@ spec:
   steps:
   - name: "Validate PostgreSQL Connectivity"
     run:
-      image: docker.io/library/postgres:16-alpine@sha256:acf5667d4ee0a7d4e9e4a3cfec41e451721e0527c65c638f5e54e78a02fe4c3f
+      image: docker.io/library/postgres:16-alpine@sha256:23e88eb049fd5d54894d70100df61d38a49ed97909263f79d4ff4c30a5d5fca2
       env:
       - name: PGHOST
         value: "{{ config.host }}"

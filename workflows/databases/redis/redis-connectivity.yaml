@@ -35,7 +35,7 @@ spec:
   steps:
   - name: "Validate Redis Connectivity"
     run:
-      image: docker.io/library/redis:7-alpine@sha256:de13e74e14b98eb96bdf886791571a2a48f4f48d4540c4572bfb2c3ee6d77d93
+      image: docker.io/library/redis:7-alpine@sha256:ee64a64eaab618d88051c3ade8f6352d11531fcf79d9a4818b9b183d8c1d18ba
       shell: |
         echo "============================================"
         echo "  Redis Connectivity Validation"
